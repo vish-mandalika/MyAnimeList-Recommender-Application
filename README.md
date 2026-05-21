@@ -1,4 +1,4 @@
-# MyAnimeList-Recommender-Application
+# MyAnimeList Recommender Application
 Developed a recommendation system for MyAnimeList (MAL - https://myanimelist.net/) to replace the need for manually searching for new titles. Users can find new anime based on titles they have watched, genre's they find interesting or even using their MAL username through a light web application. This repo serves as a showcase of the product and my logic to build it. It is only a demo using a static snapshot of the MAL database.
 
 [Try the live demo here!](https://mal-recommender.onrender.com/)
