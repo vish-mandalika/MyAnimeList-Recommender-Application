@@ -15,17 +15,17 @@ The application offers three different paths to get recommendations, each design
 
 ![Home Page](screenshots/home-page.png)
 
-### "I have seen some anime"
+### 🎬 "I have seen some anime"
 
 Users select titles that they enjoyed from a visual grid of popular anime. The system builds a genre fingerprint from their selections and finds the most similar titles using cosine similarity on one-hot encoded genre vectors.
 ![Title Picker](screenshots/title-picker.png)
 
-### "I am new to anime"
+### 🆕 "I am new to anime"
 
 For cold-start users with no watch history but have preferences for genres. The system scores every anime by genre match percentage, ranked by community rating within each match tier.
 ![Genre Picker](screenshots/genre-picker.png)
 
-### "I have an MAL account"
+### 📋 "I have an MAL account"
 
 Users enter their MAL username, and the system analyzes their rating history to generate a hybrid recommendation that combines collaborative filtering with content-based signals.
 ![MAL Username](screenshots/mal-user.png)
