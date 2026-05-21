@@ -45,6 +45,7 @@ Built on the [MyAnimeList Kaggle dataset](https://www.kaggle.com/datasets/azatho
 
 ### Exploratory Analysis
 **Rating distribution** - MAL ratings cluster heavily around 7–8 with a mean of 7.59. Users overwhelmingly rate things they liked, creating a strong positive skew. This motivated per-user mean centering for the collaborative filtering models.
+
 ![Rating Distribution](screenshots/rating-distribution.png)
 
 **Genre co-occurrence** - Genres like Sci-Fi/Mecha and Shounen/Action are tightly coupled, while others like Romance/Mecha almost never co-occur. The co-occurrence structure confirmed that raw one-hot genre vectors capture meaningful similarity for content-based filtering.
