@@ -55,7 +55,7 @@ Built on the [MyAnimeList Kaggle dataset](https://www.kaggle.com/datasets/azatho
 
 ### Model Comparison
  
-I evaluated four approaches systematically:
+I evaluated four approaches systematically, and experimented with their parameters to identify the best model:
  
 | Model | RMSE | MAE | Key Finding |
 |-------|------|-----|-------------|
@@ -92,8 +92,8 @@ I evaluated four approaches systematically:
 
 ## About
  
-Built by **Viswas Mandalika** — Data Analytics Engineering graduate student at Northeastern University.
+Built by **Viswas Mandalika** - Data Analytics Engineering Graduate student @ Northeastern University, Boston, MA
 This product demonstrates end-to-end data science: exploratory analysis, model selection and evaluation, productionization, and deployment. 
-The full analytical methodology is documented in a detailed Jupyter notebook covering data cleaning, EDA, and model comparison.
+The full analytical methodology in a detailed Jupyter notebook covering data cleaning, EDA, and model comparison can be shown over call.
 
 
