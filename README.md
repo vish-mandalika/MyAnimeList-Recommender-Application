@@ -101,6 +101,6 @@ I evaluated four approaches systematically, and experimented with their paramete
  
 Built by **Viswas Mandalika** - Data Analytics Engineering Graduate student @ Northeastern University, Boston, MA
 This product demonstrates end-to-end data science: exploratory analysis, model selection and evaluation, productionization, and deployment. 
-The full analytical methodology in a detailed Jupyter notebook covering data cleaning, EDA, and model comparison can be found in the [Jupyter Notebook](LINK) in this repo.
+The full analytical methodology in a detailed Jupyter notebook covering data cleaning, EDA, and model comparison can be found in the [Jupyter Notebook](https://github.com/vish-mandalika/MyAnimeList-Recommender-Application/blob/main/Notebook_MAL_Recommender_EDA_%26_Model_showcase.ipynb) in this repo.
 
 
