@@ -91,7 +91,7 @@ I evaluated four approaches systematically, and experimented with their paramete
 ---
 
 ## Future improvements
-- **Better franchise deduplication:** the current 2-word heuristic misses cases like "Fullmetal Alchemist" vs "FMA: Brotherhood". Furthemore, it 
+- **Better franchise deduplication:** the current 2-word heuristic misses cases like "Fullmetal Alchemist" vs "FMA: Brotherhood." A more robust approach would use MAL's related-anime metadata to group entries by franchise.
 - **Richer content features:** incorporate studio, source material, and synopsis text (via TF-IDF or embeddings) beyond just genres
 - **Live MAL integration:** use the Jikan API to fetch any user's current ratings instead of relying on a static dataset snapshot
 - **A/B testing different alpha weights:** the 70/30 CF/CB split was chosen heuristically; user feedback could optimize this
