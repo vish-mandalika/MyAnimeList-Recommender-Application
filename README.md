@@ -90,10 +90,17 @@ I evaluated four approaches systematically, and experimented with their paramete
 - **Deployment:** Render
 ---
 
+## Future improvements
+- **Better franchise deduplication:** the current 2-word heuristic misses cases like "Fullmetal Alchemist" vs "FMA: Brotherhood". Furthemore, it 
+- **Richer content features:** incorporate studio, source material, and synopsis text (via TF-IDF or embeddings) beyond just genres
+- **Live MAL integration:** use the Jikan API to fetch any user's current ratings instead of relying on a static dataset snapshot
+- **A/B testing different alpha weights:** the 70/30 CF/CB split was chosen heuristically; user feedback could optimize this
+---
+
 ## About
  
 Built by **Viswas Mandalika** - Data Analytics Engineering Graduate student @ Northeastern University, Boston, MA
 This product demonstrates end-to-end data science: exploratory analysis, model selection and evaluation, productionization, and deployment. 
-The full analytical methodology in a detailed Jupyter notebook covering data cleaning, EDA, and model comparison can be shown over call.
+The full analytical methodology in a detailed Jupyter notebook covering data cleaning, EDA, and model comparison can be found in the [Jupyter Notebook](LINK) in this repo.
 
 
