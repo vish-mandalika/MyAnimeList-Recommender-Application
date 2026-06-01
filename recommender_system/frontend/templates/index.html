@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="landing-bg">
+        <div class="landing-overlay"></div>
+        <div class="landing-content">
+            <header>
+                <h1>Anime Recommender</h1>
+                <p class="subtitle">Discover your next favorite anime</p>
+            </header>
+
+            <div class="options-grid">
+                <a href="/pick-titles" class="option-card">
+                    <span class="option-icon">🎬</span>
+                    <h2>I've watched some anime</h2>
+                    <p>Pick titles you've enjoyed and we'll find similar ones</p>
+                </a>
+
+                <a href="/pick-genres" class="option-card">
+                    <span class="option-icon">🆕</span>
+                    <h2>I'm new to anime</h2>
+                    <p>Tell us which genres interest you and we'll get you started</p>
+                </a>
+
+                <a href="/mal-user" class="option-card">
+                    <span class="option-icon">📋</span>
+                    <h2>I have a MAL account</h2>
+                    <p>Enter your MyAnimeList username for personalized picks</p>
+                </a>
+            </div>
+
+            <p class="credit">
+                Background art by
+                <a href="https://wall.alphacoders.com/big.php?i=740446" target="_blank" rel="noopener">
+                    Randyadr
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

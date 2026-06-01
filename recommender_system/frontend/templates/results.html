@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Recommendations — Anime Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/pick-titles" class="back-link">← Pick different titles</a>
+            <h1>Your recommendations</h1>
+            <p class="subtitle" id="subtitle">Finding anime you'll love...</p>
+        </header>
+        <div id="explainer"></div>
+        <div id="results-list" class="results-list">
+            <p class="loading">Loading recommendations...</p>
+        </div>
+    </div>
+
+<script>
+    let coverQueue = [];
+    let fetchingCovers = false;
+
+    function fetchCover(img, animeId) {
+        img.onerror = () => img.style.display = 'none';
+        coverQueue.push({ img, animeId });
+        if (!fetchingCovers) processQueue();
+    }
+
+    function processQueue() {
+        if (coverQueue.length === 0) {
+            fetchingCovers = false;
+            return;
+        }
+        fetchingCovers = true;
+        const { img, animeId } = coverQueue.shift();
+        fetch(`/api/cover/${animeId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.url) {
+                    img.src = data.url;
+                } else {
+                    img.style.display = 'none';
+                }
+            })
+            .catch(() => img.style.display = 'none')
+            .finally(() => {
+                setTimeout(processQueue, 400);
+            });
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const ids = params.get("anime_ids")?.split(",").map(Number) || [];
+
+    fetch("/api/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ anime_ids: ids })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const exp = data.explanation;
+        const recs = data.recommendations;
+
+        document.getElementById("subtitle").textContent =
+            `Based on your ${exp.selected_titles.length} picks`;
+
+        // Build explainer card
+        const explainer = document.getElementById("explainer");
+        const genreChips = exp.top_genres.map(g =>
+            `<span class="explainer-genre">${g.name} (${g.count})</span>`
+        ).join("");
+
+        explainer.innerHTML = `
+            <div class="explainer-card">
+                <h3><i class="method-icon">⚙️</i> How this works</h3>
+                <div class="explainer-steps">
+                    <div class="explainer-step">
+                        <span class="step-number">1</span>
+                        <div>
+                            <strong>Your genre profile</strong>
+                            <p>From your picks, we built a genre fingerprint. Your top genres:</p>
+                            <div class="explainer-genres">${genreChips}</div>
+                        </div>
+                    </div>
+                    <div class="explainer-step">
+                        <span class="step-number">2</span>
+                        <div>
+                            <strong>Cosine similarity</strong>
+                            <p>We represented every anime as a vector of its genres, then measured the angle between your profile and each of the ${exp.total_anime_compared.toLocaleString()} anime in our database. The smaller these angles, the more similar the taste.</p>
+                        </div>
+                    </div>
+                    <div class="explainer-step">
+                        <span class="step-number">3</span>
+                        <div>
+                            <strong>Ranking</strong>
+                            <p>Results are ranked by similarity score, with franchise duplicates removed so you get diverse recommendations.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Build results list
+        const list = document.getElementById("results-list");
+        list.innerHTML = "";
+        recs.forEach((r, i) => {
+            const card = document.createElement("div");
+            card.className = "result-card";
+            card.innerHTML = `
+                <div class="result-rank">${i + 1}</div>
+                <img class="result-cover"
+                     src="${r.cover || ''}"
+                     alt="${r.title_english}"
+                     onerror="fetchCover(this, ${r.anime_id})">
+                <div class="result-info">
+                    <h3>${r.title_english}</h3>
+                    <p class="genre-tags">${r.genre}</p>
+                </div>
+                <div class="result-scores">
+                    <span class="score-badge">★ ${r.score}</span>
+                    <span class="similarity-badge">${(r.similarity * 100).toFixed(0)}% match</span>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    })
+    .catch(err => {
+        document.getElementById("results-list").innerHTML =
+            `<p class="loading">Something went wrong. Please try again.</p>`;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pick Genres — Anime Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Back</a>
+            <h1>What genres interest you?</h1>
+            <p class="subtitle">Pick 1–5 genres to get started</p>
+        </header>
+
+        <div id="genre-grid" class="genre-grid">
+            <p class="loading">Loading genres...</p>
+        </div>
+
+        <div class="sticky-bar" id="sticky-bar" style="display: none;">
+            <span id="pick-count">0 selected</span>
+            <button id="recommend-btn" onclick="getRecommendations()">
+                Get Recommendations →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selected = new Set();
+
+        fetch("/api/genres")
+            .then(res => res.json())
+            .then(genres => {
+                const grid = document.getElementById("genre-grid");
+                grid.innerHTML = "";
+
+                // Filter out very small genres and Hentai for the picker
+                const filtered = genres.filter(g => g.count >= 50);
+
+                filtered.forEach(g => {
+                    const chip = document.createElement("button");
+                    chip.className = "genre-chip";
+                    chip.textContent = g.name;
+                    chip.onclick = () => toggleGenre(chip, g.name);
+                    grid.appendChild(chip);
+                });
+            });
+
+        function toggleGenre(chip, name) {
+            if (selected.size >= 5 && !selected.has(name)) return;
+
+            if (selected.has(name)) {
+                selected.delete(name);
+                chip.classList.remove("selected");
+            } else {
+                selected.add(name);
+                chip.classList.add("selected");
+            }
+            updateBar();
+        }
+
+        function updateBar() {
+            const bar = document.getElementById("sticky-bar");
+            const count = document.getElementById("pick-count");
+            const btn = document.getElementById("recommend-btn");
+
+            if (selected.size > 0) {
+                bar.style.display = "flex";
+                count.textContent = `${selected.size} genre${selected.size > 1 ? "s" : ""} selected`;
+                btn.disabled = false;
+            } else {
+                bar.style.display = "none";
+            }
+        }
+
+        function getRecommendations() {
+            const genres = Array.from(selected);
+            // Store in sessionStorage and navigate to results
+            sessionStorage.setItem("rec_type", "genre");
+            sessionStorage.setItem("rec_genres", JSON.stringify(genres));
+            window.location.href = "/results-genre";
+        }
+    </script>
+</body>
+</html>

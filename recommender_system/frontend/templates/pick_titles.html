@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pick Your Favorites — Anime Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Back</a>
+            <h1>Pick anime you've enjoyed</h1>
+            <p class="subtitle">Select at least 3 titles, then hit recommend</p>
+        </header>
+
+        <div id="anime-grid" class="anime-grid">
+            <p class="loading">Loading anime...</p>
+        </div>
+
+        <div class="sticky-bar" id="sticky-bar" style="display: none;">
+            <span id="pick-count">0 selected</span>
+            <button id="recommend-btn" onclick="getRecommendations()">
+                Get Recommendations →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        console.log("Script loaded");
+        let selected = new Set();
+
+        fetch("/api/popular-anime")
+        .then(res => {
+            console.log("API response:", res.status);
+            return res.json();
+        })
+        .then(anime => {
+            console.log("Got anime:", anime.length);
+        })
+        // Load popular anime on page load
+        fetch("/api/popular-anime")
+            .then(res => res.json())
+            .then(anime => {
+                const grid = document.getElementById("anime-grid");
+                grid.innerHTML = "";
+                anime.forEach(a => {
+                    const card = document.createElement("div");
+                    card.className = "anime-pick-card";
+                    card.dataset.id = a.anime_id;
+                    card.innerHTML = `
+                        <img class="anime-cover"
+                            src="${a.cover || ''}"
+                            alt="${a.title_english}"
+                            onerror="this.style.display='none'">
+                        <h3>${a.title_english}</h3>
+                        <p class="genre-tags">${a.genre}</p>
+                        <span class="score-badge">★ ${a.score}</span>
+                    `;
+                    card.onclick = () => toggleSelect(card, a.anime_id);
+                    grid.appendChild(card);
+                });
+            });
+
+        function toggleSelect(card, animeId) {
+            if (selected.has(animeId)) {
+                selected.delete(animeId);
+                card.classList.remove("selected");
+            } else {
+                selected.add(animeId);
+                card.classList.add("selected");
+            }
+            updateBar();
+        }
+
+        function updateBar() {
+            const bar = document.getElementById("sticky-bar");
+            const count = document.getElementById("pick-count");
+            const btn = document.getElementById("recommend-btn");
+
+            if (selected.size > 0) {
+                bar.style.display = "flex";
+                count.textContent = `${selected.size} selected`;
+                btn.disabled = selected.size < 3;
+            } else {
+                bar.style.display = "none";
+            }
+        }
+
+        function getRecommendations() {
+            const ids = Array.from(selected);
+            window.location.href = "/results?anime_ids=" + ids.join(",");
+        }
+    </script>
+</body>
+</html>

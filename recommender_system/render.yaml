@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: anime-recommender
+    runtime: python
+    buildCommand: pip install -r frontend/requirements.txt
+    startCommand: gunicorn --chdir frontend app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"

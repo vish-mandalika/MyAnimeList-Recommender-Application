@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAL Username — Anime Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Back</a>
+            <h1>Enter your MAL username</h1>
+            <p class="subtitle">We'll analyze your ratings and find new anime for you</p>
+        </header>
+
+        <div class="username-form">
+            <input
+                type="text"
+                id="username-input"
+                placeholder="e.g. landlock"
+                autocomplete="off"
+            >
+            <button id="go-btn" onclick="lookupUser()">
+                Find Recommendations →
+            </button>
+        </div>
+
+        <p class="hint">
+            This demo uses a static dataset snapshot — about 2,300 users are available.
+            Try: <span class="hint-link" onclick="tryUser('landlock')">landlock</span>
+        </p>
+
+        <div id="error-msg" class="error-msg" style="display: none;"></div>
+
+        <div id="user-profile" style="display: none;">
+            <div class="profile-card">
+                <h2 id="profile-name"></h2>
+                <div class="profile-stats" id="profile-stats"></div>
+                <div class="profile-genres" id="profile-genres"></div>
+            </div>
+        </div>
+        <div id="explainer"></div>
+        <div id="results-list" class="results-list" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById("username-input");
+        input.addEventListener("keypress", e => {
+            if (e.key === "Enter") lookupUser();
+        });
+
+        function tryUser(name) {
+            input.value = name;
+            lookupUser();
+        }
+
+        let coverQueue = [];
+        let fetchingCovers = false;
+
+        function fetchCover(img, animeId) {
+            img.onerror = () => img.style.display = 'none';
+            coverQueue.push({ img, animeId });
+            if (!fetchingCovers) processQueue();
+        }
+
+        function processQueue() {
+            if (coverQueue.length === 0) {
+                fetchingCovers = false;
+                return;
+            }
+            fetchingCovers = true;
+            const { img, animeId } = coverQueue.shift();
+            fetch(`/api/cover/${animeId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.url) {
+                        img.src = data.url;
+                    } else {
+                        img.style.display = 'none';
+                    }
+                })
+                .catch(() => img.style.display = 'none')
+                .finally(() => {
+                    setTimeout(processQueue, 400);
+                });
+        }
+
+        function lookupUser() {
+            const username = input.value.trim();
+            if (!username) return;
+
+            const btn = document.getElementById("go-btn");
+            const error = document.getElementById("error-msg");
+            const profile = document.getElementById("user-profile");
+            const explainer = document.getElementById("explainer");
+            const results = document.getElementById("results-list");
+
+            btn.textContent = "Loading...";
+            btn.disabled = true;
+            error.style.display = "none";
+            profile.style.display = "none";
+            explainer.innerHTML = "";
+            results.style.display = "none";
+
+            coverQueue = [];
+            fetchingCovers = false;
+
+            fetch("/api/recommend-by-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: username })
+            })
+            .then(res => {
+                if (!res.ok) return res.json().then(d => { throw d; });
+                return res.json();
+            })
+            .then(data => {
+                const stats = data.user_stats;
+                const exp = data.explanation;
+                const recs = data.recommendations;
+
+                // Show user profile
+                document.getElementById("profile-name").textContent = stats.username;
+                document.getElementById("profile-stats").innerHTML = `
+                    <span>${stats.total_rated} anime rated</span>
+                    <span>Mean score: ${stats.mean_score}</span>
+                `;
+                document.getElementById("profile-genres").innerHTML =
+                    stats.top_genres.map(g =>
+                        `<span class="genre-chip selected">${g.name}</span>`
+                    ).join("");
+                profile.style.display = "block";
+
+                // Show explainer
+                const genreChips = stats.top_genres.map(g =>
+                    `<span class="explainer-genre">${g.name} (${g.count})</span>`
+                ).join("");
+
+                explainer.innerHTML = `
+                    <div class="explainer-card">
+                        <h3><i class="method-icon">⚙️</i> How this works</h3>
+                        <div class="explainer-steps">
+                            <div class="explainer-step">
+                                <span class="step-number">1</span>
+                                <div>
+                                    <strong>Your taste profile</strong>
+                                    <p>From your ${exp.n_rated} rated anime (${exp.n_favorites} favorites rated 8+), we built a content profile of the genres you love:</p>
+                                    <div class="explainer-genres">${genreChips}</div>
+                                </div>
+                            </div>
+                            <div class="explainer-step">
+                                <span class="step-number">2</span>
+                                <div>
+                                    <strong>Two models combined</strong>
+                                    <p>SVD matrix factorization predicted your ratings based on patterns from 2,300+ similar users. It captures "people who liked X also liked Y" even across different genres. Content-based filtering found anime matching your favorite genres using cosine similarity. SVD misses niche titles while content-based misses behavioral patterns, so we combine them to complement each other.</p>
+                                </div>
+                            </div>
+                            <div class="explainer-step">
+                                <span class="step-number">3</span>
+                                <div>
+                                    <strong>Rank fusion</strong>
+                                    <p>We ranked all ${exp.n_candidates.toLocaleString()} candidate anime by each model separately, then blended the ranks (${(exp.cf_weight * 100).toFixed(0)}% collaborative, ${(exp.cb_weight * 100).toFixed(0)}% content-based) so both popular picks and hidden gems surface.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Show recommendations
+                results.innerHTML = "";
+                recs.forEach((r, i) => {
+                    const card = document.createElement("div");
+                    card.className = "result-card";
+                    card.innerHTML = `
+                        <div class="result-rank">${i + 1}</div>
+                        <img class="result-cover"
+                            src="${r.cover || ''}"
+                            alt="${r.title_english}"
+                            onerror="fetchCover(this, ${r.anime_id})">
+                        <div class="result-info">
+                            <h3>${r.title_english}</h3>
+                            <p class="genre-tags">${r.genre}</p>
+                        </div>
+                        <div class="result-scores">
+                            <span class="score-badge">★ ${r.score}</span>
+                            <span class="similarity-badge">Predicted: ${r.cf_score}/10</span>
+                        </div>
+                    `;
+                    results.appendChild(card);
+                });
+                results.style.display = "flex";
+            })
+            .catch(err => {
+                error.textContent = err.error || "Something went wrong.";
+                error.style.display = "block";
+            })
+            .finally(() => {
+                btn.textContent = "Find Recommendations →";
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
